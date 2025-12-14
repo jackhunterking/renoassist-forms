@@ -68,7 +68,7 @@ export default function Step2Renovate() {
                 </svg>
               )}
             </div>
-            <span className="font-medium">{option.value}</span>
+            <span className="font-medium tracking-wide">{option.value}</span>
           </button>
         ))}
       </div>

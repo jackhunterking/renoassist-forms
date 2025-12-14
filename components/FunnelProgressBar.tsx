@@ -11,10 +11,10 @@ export default function FunnelProgressBar({ currentStep, totalSteps }: FunnelPro
   return (
     <div className="w-full">
       <div className="flex justify-between items-center mb-2">
-        <span className="text-sm font-medium text-slate-600">
+        <span className="text-sm font-medium text-slate-500 tracking-wide">
           Step {currentStep} of {totalSteps}
         </span>
-        <span className="text-sm font-medium text-primary">
+        <span className="text-sm font-semibold text-primary tabular-nums">
           {Math.round(progress)}%
         </span>
       </div>

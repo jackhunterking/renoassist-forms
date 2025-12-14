@@ -103,7 +103,7 @@ export default function Step9Contact() {
       <div className="space-y-6">
         {/* Full Name */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium tracking-wide text-slate-600 mb-2">
             Full name
           </label>
           <input
@@ -117,7 +117,7 @@ export default function Step9Contact() {
 
         {/* Phone Number */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium tracking-wide text-slate-600 mb-2">
             Phone number
           </label>
           <input
@@ -127,7 +127,7 @@ export default function Step9Contact() {
             placeholder="Enter your phone number"
             className="w-full p-4 rounded-xl border-2 border-slate-200 bg-white focus:border-primary focus:outline-none text-slate-700 placeholder:text-slate-400"
           />
-          <p className="text-sm text-accent mt-2">
+          <p className="text-sm text-accent mt-2 leading-relaxed">
             (Number Format ex: XXXXXXXXXX, no dash or special characters)
           </p>
         </div>
@@ -135,16 +135,16 @@ export default function Step9Contact() {
         {/* Error Message */}
         {error && (
           <div className="p-4 bg-red-50 rounded-xl border border-red-200">
-            <p className="text-red-700">{error}</p>
+            <p className="text-red-700 text-sm leading-relaxed">{error}</p>
           </div>
         )}
 
         {/* Terms */}
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-slate-500 leading-relaxed">
           By clicking the submit, you agreed to our{' '}
-          <a href="#" className="text-primary underline">terms and conditions</a>
+          <a href="#" className="text-primary underline hover:no-underline">terms and conditions</a>
           {' '}and{' '}
-          <a href="#" className="text-primary underline">privacy policy</a>
+          <a href="#" className="text-primary underline hover:no-underline">privacy policy</a>
         </p>
       </div>
     </StepContainer>

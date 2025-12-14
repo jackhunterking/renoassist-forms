@@ -52,7 +52,7 @@ export default function Step3Entrance() {
                 : 'border-slate-200 hover:border-slate-300 text-slate-700'
             }`}
           >
-            <span className="font-medium">{option.value}</span>
+            <span className="font-medium tracking-wide">{option.value}</span>
           </button>
         ))}
       </div>

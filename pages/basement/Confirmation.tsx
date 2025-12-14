@@ -62,7 +62,7 @@ export default function Confirmation() {
             alt="RenoAssist" 
             className="h-10 w-auto"
           />
-          <span className="text-xl font-bold text-primary">RenoAssist</span>
+          <span className="text-xl font-semibold tracking-tight text-primary">RenoAssist</span>
         </div>
       </header>
 
@@ -77,48 +77,48 @@ export default function Confirmation() {
           </div>
 
           {/* Title */}
-          <h1 className="text-3xl font-bold text-slate-900 mb-4">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900 mb-4">
             Thank You!
           </h1>
 
           {/* Message */}
-          <p className="text-lg text-slate-600 mb-8">
+          <p className="text-lg text-slate-600 mb-8 leading-relaxed">
             Your basement renovation inquiry has been submitted successfully. 
             Our contractors will review your project and get back to you shortly.
           </p>
 
           {/* What's Next Section */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-left mb-8">
-            <h2 className="text-lg font-bold text-slate-900 mb-4">What happens next?</h2>
+            <h2 className="text-lg font-semibold tracking-tight text-slate-900 mb-4">What happens next?</h2>
             
             <div className="space-y-4">
               <div className="flex gap-4">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-sm">1</span>
+                  <span className="text-white font-semibold text-sm">1</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900">Project Review</h3>
-                  <p className="text-sm text-slate-600">Our team will review your project details and requirements.</p>
+                  <h3 className="font-medium text-slate-900">Project Review</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">Our team will review your project details and requirements.</p>
                 </div>
               </div>
 
               <div className="flex gap-4">
                 <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-sm">2</span>
+                  <span className="text-white font-semibold text-sm">2</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900">Contractor Matching</h3>
-                  <p className="text-sm text-slate-600">We'll match you with qualified contractors in your area.</p>
+                  <h3 className="font-medium text-slate-900">Contractor Matching</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">We'll match you with qualified contractors in your area.</p>
                 </div>
               </div>
 
               <div className="flex gap-4">
                 <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-sm">3</span>
+                  <span className="text-white font-semibold text-sm">3</span>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-slate-900">Get Your Quotes</h3>
-                  <p className="text-sm text-slate-600">Receive competitive quotes from verified professionals.</p>
+                  <h3 className="font-medium text-slate-900">Get Your Quotes</h3>
+                  <p className="text-sm text-slate-500 leading-relaxed">Receive competitive quotes from verified professionals.</p>
                 </div>
               </div>
             </div>
@@ -127,7 +127,7 @@ export default function Confirmation() {
           {/* CTA */}
           <a 
             href="https://renoassist.io" 
-            className="inline-block px-8 py-4 bg-primary text-white font-semibold rounded-xl hover:bg-secondary transition-colors"
+            className="inline-block px-8 py-4 bg-primary text-white font-medium tracking-wide rounded-xl hover:bg-secondary transition-colors"
           >
             Return to RenoAssist
           </a>

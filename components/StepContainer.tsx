@@ -51,7 +51,7 @@ export default function StepContainer({
             alt="RenoAssist" 
             className="h-10 w-auto"
           />
-          <span className="text-xl font-bold text-primary">RenoAssist</span>
+          <span className="text-xl font-semibold tracking-tight text-primary">RenoAssist</span>
         </div>
       </header>
 
@@ -64,13 +64,13 @@ export default function StepContainer({
       <main className="flex-1 w-full max-w-2xl mx-auto px-6 py-8">
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
           {/* Title */}
-          <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">
+          <h1 className="text-2xl md:text-[28px] font-semibold tracking-tight text-slate-900 mb-2 leading-tight">
             {title}
           </h1>
           
           {/* Subtitle */}
           {subtitle && (
-            <p className="text-slate-600 mb-8">{subtitle}</p>
+            <p className="text-slate-500 mb-8 leading-relaxed">{subtitle}</p>
           )}
 
           {/* Form Content */}
@@ -84,7 +84,7 @@ export default function StepContainer({
               <button
                 type="button"
                 onClick={handleBack}
-                className="flex-1 py-4 px-6 rounded-xl border-2 border-slate-300 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
+                className="flex-1 py-4 px-6 rounded-xl border-2 border-slate-300 text-slate-700 font-medium tracking-wide hover:bg-slate-50 transition-colors"
               >
                 {backLabel}
               </button>
@@ -95,7 +95,7 @@ export default function StepContainer({
                 type="button"
                 onClick={onNext}
                 disabled={isNextDisabled || isSubmitting}
-                className={`flex-1 py-4 px-6 rounded-xl font-semibold transition-all ${
+                className={`flex-1 py-4 px-6 rounded-xl font-medium tracking-wide transition-all ${
                   isNextDisabled || isSubmitting
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                     : 'bg-primary text-white hover:bg-secondary'

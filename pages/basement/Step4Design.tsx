@@ -50,7 +50,7 @@ export default function Step4Design() {
                 : 'border-slate-200 hover:border-slate-300 text-slate-700'
             }`}
           >
-            <span className="font-medium">{option.label}</span>
+            <span className="font-medium tracking-wide">{option.label}</span>
           </button>
         ))}
       </div>

@@ -152,7 +152,7 @@ export default function Step7Location() {
       <div className="space-y-4">
         {error ? (
           <div className="p-4 bg-red-50 rounded-xl border border-red-200">
-            <p className="text-red-700">{error}</p>
+            <p className="text-red-700 text-sm leading-relaxed">{error}</p>
           </div>
         ) : (
           <>
@@ -165,7 +165,7 @@ export default function Step7Location() {
             />
             
             {isLoading && (
-              <p className="text-sm text-slate-500">Loading location services...</p>
+              <p className="text-sm text-slate-500 leading-relaxed">Loading location services...</p>
             )}
           </>
         )}
