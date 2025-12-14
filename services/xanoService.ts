@@ -3,6 +3,17 @@ import { BasementFormData, XanoPayload, XanoAnswer } from '../types/basement';
 const XANO_ENDPOINT = 'https://xewg-ezlq-ir6t.n2.xano.io/api:hv7Xacah/projects/create';
 
 /**
+ * Sanitize a string to be used as a valid filename
+ * Xano uses homeownerName + ".svg" as filename, so we must remove invalid characters
+ */
+function sanitizeForFilename(name: string): string {
+  return name
+    .replace(/[^a-zA-Z0-9\s-]/g, '')  // Remove special chars (periods, etc.)
+    .replace(/\s+/g, '_')              // Replace spaces with underscores
+    .trim();
+}
+
+/**
  * Format form data into Xano-compatible payload
  */
 export function formatXanoPayload(
@@ -11,7 +22,8 @@ export function formatXanoPayload(
 ): XanoPayload {
   return {
     category: 1, // Basement category
-    homeownerName: formData.homeownerName,
+    // Sanitize homeownerName for Xano filename compatibility (used as: homeownerName + ".svg")
+    homeownerName: sanitizeForFilename(formData.homeownerName),
     email: formData.email,
     phone: formData.phone,
     postalCode: formData.postalCode,
