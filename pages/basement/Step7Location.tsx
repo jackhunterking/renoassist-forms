@@ -54,12 +54,13 @@ export default function Step7Location() {
           hasInitialized.current = true;
           
           // Create Autocomplete instance
+          // Using 'geocode' type to allow both addresses and postal code searches
           autocompleteRef.current = new google.maps.places.Autocomplete(
             inputRef.current,
             {
               componentRestrictions: { country: 'ca' },
               fields: ['address_components', 'geometry', 'formatted_address'],
-              types: ['address'],
+              types: ['geocode'],
             }
           );
 
