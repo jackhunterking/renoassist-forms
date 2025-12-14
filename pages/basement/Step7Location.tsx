@@ -1,59 +1,143 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
+import { loadGoogleMapsScript, isGoogleMapsLoaded } from '../../services/googleMapsLoader';
+
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 export default function Step7Location() {
   const navigate = useNavigate();
-  const { formData, updateFormData } = useBasementForm();
-  const [address, setAddress] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const { formData, updateFormData, isInitialized, trackStepView, completeStep } = useBasementForm();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Refs
+  const inputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const hasTrackedStepView = useRef(false);
+  const hasInitialized = useRef(false);
 
-  const handleAddressChange = async (value: string) => {
-    setAddress(value);
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(7);
+    }
+  }, [isInitialized, trackStepView]);
+
+  // Pre-fill input when location is already selected (e.g., user returns to this step)
+  useEffect(() => {
+    if (inputRef.current && formData.city && formData.postalCode && !isLoading) {
+      inputRef.current.value = `${formData.city}, ${formData.postalCode}`;
+    }
+  }, [formData.city, formData.postalCode, isLoading]);
+
+  // Load Google Maps and initialize Autocomplete
+  useEffect(() => {
+    if (hasInitialized.current) return;
     
-    // Extract postal code from input (Canadian format: A1A 1A1 or A1A1A1)
-    const postalCodeMatch = value.match(/[A-Za-z]\d[A-Za-z][\s]?\d[A-Za-z]\d/i);
-    if (postalCodeMatch) {
-      const postalCode = postalCodeMatch[0].toUpperCase();
-      updateFormData({ postalCode });
-      
-      // Try to geocode and get city
-      setIsLoading(true);
+    if (!GOOGLE_MAPS_API_KEY) {
+      setError('Google Maps API key is not configured');
+      setIsLoading(false);
+      return;
+    }
+
+    const initAutocomplete = async () => {
       try {
-        const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&countrycodes=ca&postalcode=${encodeURIComponent(postalCode)}&limit=1`
-        );
-        const data = await response.json();
+        await loadGoogleMapsScript(GOOGLE_MAPS_API_KEY);
         
-        if (data && data.length > 0) {
-          const result = data[0];
-          const cityMatch = result.display_name.split(',');
-          const city = cityMatch[1]?.trim() || cityMatch[0]?.trim() || '';
+        // Small delay to ensure DOM is ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        if (inputRef.current && isGoogleMapsLoaded()) {
+          hasInitialized.current = true;
           
-          updateFormData({
-            city: city,
-            geoPoint: {
-              lat: parseFloat(result.lat),
-              lng: parseFloat(result.lon),
-            },
-          });
+          // Create Autocomplete instance
+          autocompleteRef.current = new google.maps.places.Autocomplete(
+            inputRef.current,
+            {
+              componentRestrictions: { country: 'ca' },
+              fields: ['address_components', 'geometry', 'formatted_address'],
+              types: ['address'],
+            }
+          );
+
+          // Listen for place selection
+          autocompleteRef.current.addListener('place_changed', handlePlaceChanged);
         }
-      } catch (error) {
-        console.error('Geocoding error:', error);
-      } finally {
+        
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Failed to load Google Maps:', err);
+        setError('Failed to load location services');
         setIsLoading(false);
       }
+    };
+
+    initAutocomplete();
+  }, []);
+
+  // Handle place selection from autocomplete
+  const handlePlaceChanged = () => {
+    if (!autocompleteRef.current) return;
+    
+    const place = autocompleteRef.current.getPlace();
+    
+    if (!place.geometry || !place.address_components) {
+      console.log('No geometry or address_components in place result');
+      return;
+    }
+    
+    let city = '';
+    let postalCode = '';
+    
+    // Extract city and postal code from address components
+    for (const component of place.address_components) {
+      const types = component.types;
+      
+      if (types.includes('locality')) {
+        city = component.long_name;
+      } else if (types.includes('sublocality_level_1') && !city) {
+        city = component.long_name;
+      } else if (types.includes('administrative_area_level_3') && !city) {
+        city = component.long_name;
+      }
+      
+      if (types.includes('postal_code')) {
+        postalCode = component.long_name;
+      }
+    }
+    
+    // Get geo coordinates
+    const geoPoint = place.geometry.location ? {
+      lat: place.geometry.location.lat(),
+      lng: place.geometry.location.lng(),
+    } : null;
+    
+    console.log('Place selected:', { city, postalCode, geoPoint });
+    
+    // Update form data
+    updateFormData({
+      city,
+      postalCode,
+      geoPoint,
+    });
+    
+    // Update input value to show selected location
+    if (inputRef.current && city && postalCode) {
+      inputRef.current.value = `${city}, ${postalCode}`;
     }
   };
 
-  const handleNext = () => {
-    if (formData.postalCode && formData.city) {
+  const handleNext = async () => {
+    if (formData.postalCode && formData.city && formData.geoPoint) {
+      await completeStep(7);
       navigate('/basement/step-8');
     }
   };
 
-  const isValid = formData.postalCode && formData.city;
+  const isValid = formData.postalCode && formData.city && formData.geoPoint;
 
   return (
     <StepContainer
@@ -65,24 +149,24 @@ export default function Step7Location() {
       isNextDisabled={!isValid}
     >
       <div className="space-y-4">
-        <input
-          type="text"
-          value={address}
-          onChange={(e) => handleAddressChange(e.target.value)}
-          placeholder="Enter your postal code (e.g., M4S 1A1)"
-          className="w-full p-4 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none text-slate-700"
-        />
-        
-        {isLoading && (
-          <p className="text-sm text-slate-500">Looking up location...</p>
-        )}
-        
-        {formData.city && formData.postalCode && (
-          <div className="p-4 bg-green-50 rounded-xl border border-green-200">
-            <p className="text-green-800 font-medium">
-              📍 {formData.city}, {formData.postalCode}
-            </p>
+        {error ? (
+          <div className="p-4 bg-red-50 rounded-xl border border-red-200">
+            <p className="text-red-700">{error}</p>
           </div>
+        ) : (
+          <>
+            <input
+              ref={inputRef}
+              type="text"
+              placeholder={isLoading ? "Loading..." : "Start typing your address..."}
+              disabled={isLoading}
+              className="w-full p-4 rounded-xl border-2 border-slate-200 bg-white focus:border-primary focus:outline-none text-slate-700 placeholder:text-slate-400 disabled:bg-slate-100"
+            />
+            
+            {isLoading && (
+              <p className="text-sm text-slate-500">Loading location services...</p>
+            )}
+          </>
         )}
       </div>
     </StepContainer>

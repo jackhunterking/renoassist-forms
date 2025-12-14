@@ -1,5 +1,26 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { BasementFormData, XanoAnswer, QUESTION_CONFIG } from '../types/basement';
+import { 
+  initFunnelSession, 
+  trackStepEvent, 
+  updateFunnelProgress,
+  updateFunnelEmail,
+  clearFunnelData,
+  FunnelType 
+} from '../services/funnelSessionService';
+
+// Step names for funnel tracking
+const STEP_NAMES: Record<number, string> = {
+  1: 'Basement Condition',
+  2: 'Renovation Scope',
+  3: 'Separate Entrance',
+  4: 'Plan/Design',
+  5: 'Project Urgency',
+  6: 'Additional Details',
+  7: 'Project Location',
+  8: 'Email',
+  9: 'Contact Details',
+};
 
 interface BasementFormContextType {
   formData: BasementFormData;
@@ -8,6 +29,11 @@ interface BasementFormContextType {
   getXanoAnswers: () => XanoAnswer[];
   isStepComplete: (step: number) => boolean;
   getCompletedStep: () => number;
+  // Funnel tracking
+  sessionId: string | null;
+  isInitialized: boolean;
+  trackStepView: (step: number) => void;
+  completeStep: (step: number) => Promise<void>;
 }
 
 const initialFormData: BasementFormData = {
@@ -26,6 +52,7 @@ const initialFormData: BasementFormData = {
 };
 
 const STORAGE_KEY = 'renoassist_basement_form';
+const FUNNEL_TYPE: FunnelType = 'basement';
 
 const BasementFormContext = createContext<BasementFormContextType | undefined>(undefined);
 
@@ -45,12 +72,40 @@ export function BasementFormProvider({ children }: { children: ReactNode }) {
     return initialFormData;
   });
 
+  // Funnel session state
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize funnel session on mount
+  useEffect(() => {
+    const initSession = async () => {
+      try {
+        const id = await initFunnelSession(FUNNEL_TYPE);
+        setSessionId(id);
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize funnel session:', error);
+        // Still mark as initialized even if session creation fails
+        setIsInitialized(true);
+      }
+    };
+
+    initSession();
+  }, []);
+
   // Save to localStorage on changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
     }
   }, [formData]);
+
+  // Update funnel email when email changes
+  useEffect(() => {
+    if (sessionId && formData.email) {
+      updateFunnelEmail(sessionId, formData.email);
+    }
+  }, [sessionId, formData.email]);
 
   const updateFormData = (updates: Partial<BasementFormData>) => {
     setFormData(prev => ({ ...prev, ...updates }));
@@ -61,7 +116,38 @@ export function BasementFormProvider({ children }: { children: ReactNode }) {
     if (typeof window !== 'undefined') {
       localStorage.removeItem(STORAGE_KEY);
     }
+    // Clear funnel data and reset session
+    clearFunnelData(FUNNEL_TYPE);
   };
+
+  // Track step view event
+  const trackStepView = useCallback((step: number) => {
+    if (sessionId) {
+      trackStepEvent(
+        sessionId,
+        FUNNEL_TYPE,
+        step,
+        STEP_NAMES[step] || `Step ${step}`,
+        'view'
+      );
+    }
+  }, [sessionId]);
+
+  // Complete a step (track completion and update progress)
+  const completeStep = useCallback(async (step: number) => {
+    if (sessionId) {
+      // Track step completion event
+      await trackStepEvent(
+        sessionId,
+        FUNNEL_TYPE,
+        step,
+        STEP_NAMES[step] || `Step ${step}`,
+        'complete'
+      );
+      // Update funnel progress in database
+      await updateFunnelProgress(sessionId, step, formData, FUNNEL_TYPE);
+    }
+  }, [sessionId, formData]);
 
   // Convert form data to Xano-compatible answers array
   const getXanoAnswers = (): XanoAnswer[] => {
@@ -140,6 +226,11 @@ export function BasementFormProvider({ children }: { children: ReactNode }) {
         getXanoAnswers,
         isStepComplete,
         getCompletedStep,
+        // Funnel tracking
+        sessionId,
+        isInitialized,
+        trackStepView,
+        completeStep,
       }}
     >
       {children}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
@@ -6,14 +6,26 @@ import { DESIGN_OPTIONS } from '../../types/basement';
 
 export default function Step4Design() {
   const navigate = useNavigate();
-  const { formData, updateFormData } = useBasementForm();
+  const { formData, updateFormData, isInitialized, trackStepView, completeStep } = useBasementForm();
+  
+  // Ref to prevent double-firing step view
+  const hasTrackedStepView = useRef(false);
+
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(4);
+    }
+  }, [isInitialized, trackStepView]);
 
   const handleSelect = (value: boolean) => {
     updateFormData({ hasDesign: value });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (formData.hasDesign !== null) {
+      await completeStep(4);
       navigate('/basement/step-5');
     }
   };
