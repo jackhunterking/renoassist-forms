@@ -122,6 +122,8 @@ export default function Step9Contact() {
           </label>
           <input
             type="tel"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={formData.phone}
             onChange={(e) => updateFormData({ phone: formatPhone(e.target.value) })}
             placeholder="Enter your phone number"

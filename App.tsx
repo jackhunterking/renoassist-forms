@@ -34,8 +34,8 @@ export default function App() {
   return (
     <BasementFormProvider>
       <Routes>
-        {/* Root redirects to basement form */}
-        <Route path="/" element={<Navigate to="/basement/step-1" replace />} />
+        {/* Root redirects to basement form with fresh start */}
+        <Route path="/" element={<Navigate to="/basement/step-1?new=true" replace />} />
         
         {/* Basement Form Steps */}
         <Route path="/basement/step-1" element={<Step1Condition />} />

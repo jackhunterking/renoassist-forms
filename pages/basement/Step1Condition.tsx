@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
 import { QUESTION_CONFIG } from '../../types/basement';
@@ -7,13 +7,29 @@ import { trackViewContent } from '../../services/metaCapiService';
 
 export default function Step1Condition() {
   const navigate = useNavigate();
-  const { formData, updateFormData, sessionId, isInitialized, trackStepView, completeStep } = useBasementForm();
+  const [searchParams] = useSearchParams();
+  const { formData, updateFormData, resetForm, sessionId, isInitialized, trackStepView, completeStep } = useBasementForm();
   
   // Refs to prevent double-firing events
   const hasTrackedViewContent = useRef(false);
   const hasTrackedStepView = useRef(false);
+  const hasCheckedReset = useRef(false);
 
   const options = QUESTION_CONFIG.BASEMENT_CONDITION.options;
+
+  // Clear form data when starting fresh (direct navigation or ?new=true)
+  useEffect(() => {
+    if (!hasCheckedReset.current) {
+      hasCheckedReset.current = true;
+      // Reset form if ?new=true is in URL or if this is a fresh page load (not internal navigation)
+      const shouldReset = searchParams.get('new') === 'true';
+      if (shouldReset) {
+        resetForm();
+        // Remove the query param from URL
+        navigate('/basement/step-1', { replace: true });
+      }
+    }
+  }, [searchParams, resetForm, navigate]);
 
   // Track step view on mount
   useEffect(() => {

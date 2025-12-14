@@ -110,7 +110,13 @@ export default function StepContainer({
 
       {/* Footer */}
       <footer className="w-full py-4 px-6 border-t border-slate-200 bg-white">
-        <div className="max-w-2xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto text-center space-y-2">
+          <a 
+            href="/basement/step-1?new=true" 
+            className="text-slate-400 text-sm hover:text-primary transition-colors"
+          >
+            Start Over
+          </a>
           <p className="text-slate-400 text-sm">
             © {new Date().getFullYear()} RenoAssist. All rights reserved.
           </p>
