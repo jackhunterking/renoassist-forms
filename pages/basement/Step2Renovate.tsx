@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
@@ -6,9 +6,20 @@ import { QUESTION_CONFIG } from '../../types/basement';
 
 export default function Step2Renovate() {
   const navigate = useNavigate();
-  const { formData, updateFormData } = useBasementForm();
+  const { formData, updateFormData, isInitialized, trackStepView, completeStep } = useBasementForm();
+  
+  // Ref to prevent double-firing step view
+  const hasTrackedStepView = useRef(false);
 
   const options = QUESTION_CONFIG.RENOVATION_SCOPE.options;
+
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(2);
+    }
+  }, [isInitialized, trackStepView]);
 
   const handleToggle = (value: string) => {
     const current = formData.renovationScope;
@@ -18,8 +29,9 @@ export default function Step2Renovate() {
     updateFormData({ renovationScope: updated });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (formData.renovationScope.length > 0) {
+      await completeStep(2);
       navigate('/basement/step-3');
     }
   };

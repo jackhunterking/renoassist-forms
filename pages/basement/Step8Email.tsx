@@ -1,18 +1,30 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
 
 export default function Step8Email() {
   const navigate = useNavigate();
-  const { formData, updateFormData } = useBasementForm();
+  const { formData, updateFormData, isInitialized, trackStepView, completeStep } = useBasementForm();
+  
+  // Ref to prevent double-firing step view
+  const hasTrackedStepView = useRef(false);
+
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(8);
+    }
+  }, [isInitialized, trackStepView]);
 
   const isValidEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (isValidEmail(formData.email)) {
+      await completeStep(8);
       navigate('/basement/step-9');
     }
   };
@@ -31,7 +43,7 @@ export default function Step8Email() {
         value={formData.email}
         onChange={(e) => updateFormData({ email: e.target.value })}
         placeholder="Enter your email address"
-        className="w-full p-4 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none text-slate-700"
+        className="w-full p-4 rounded-xl border-2 border-slate-200 bg-white focus:border-primary focus:outline-none text-slate-700 placeholder:text-slate-400"
       />
     </StepContainer>
   );

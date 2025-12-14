@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
@@ -6,16 +6,28 @@ import { QUESTION_CONFIG } from '../../types/basement';
 
 export default function Step3Entrance() {
   const navigate = useNavigate();
-  const { formData, updateFormData } = useBasementForm();
+  const { formData, updateFormData, isInitialized, trackStepView, completeStep } = useBasementForm();
+  
+  // Ref to prevent double-firing step view
+  const hasTrackedStepView = useRef(false);
 
   const options = QUESTION_CONFIG.SEPARATE_ENTRANCE.options;
+
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(3);
+    }
+  }, [isInitialized, trackStepView]);
 
   const handleSelect = (value: string) => {
     updateFormData({ separateEntrance: value });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (formData.separateEntrance) {
+      await completeStep(3);
       navigate('/basement/step-4');
     }
   };

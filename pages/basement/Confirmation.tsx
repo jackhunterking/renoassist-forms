@@ -1,6 +1,57 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import { trackLead } from '../../services/metaCapiService';
+import { completeFunnelSession, clearFunnelData } from '../../services/funnelSessionService';
+
+interface LocationState {
+  email?: string;
+  fullName?: string;
+  phone?: string;
+  sessionId?: string;
+}
 
 export default function Confirmation() {
+  const location = useLocation();
+  const state = location.state as LocationState | null;
+  
+  // Extract user data from navigation state
+  const email = state?.email || '';
+  const fullName = state?.fullName || '';
+  const phone = state?.phone || '';
+  const sessionId = state?.sessionId || '';
+  
+  // Ref to ensure Lead event only fires once
+  const hasTrackedLead = useRef(false);
+
+  // Track Lead event on confirmation page load
+  useEffect(() => {
+    if (sessionId && email && !hasTrackedLead.current) {
+      hasTrackedLead.current = true;
+      
+      // Parse name into first/last
+      const nameParts = fullName.split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || undefined;
+      
+      // Track Lead event with full user data
+      trackLead(
+        sessionId,
+        'basement',
+        {
+          email,
+          phone: phone || undefined,
+          firstName: firstName || undefined,
+          lastName,
+        },
+        'RenoAssist - Basement Renovation Complete'
+      );
+      
+      // Finalize the funnel session after tracking
+      completeFunnelSession(sessionId);
+      clearFunnelData('basement');
+    }
+  }, [sessionId, email, fullName, phone]);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       {/* Header with Logo */}

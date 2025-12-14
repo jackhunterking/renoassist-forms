@@ -1,21 +1,43 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
 import { QUESTION_CONFIG } from '../../types/basement';
+import { trackViewContent } from '../../services/metaCapiService';
 
 export default function Step1Condition() {
   const navigate = useNavigate();
-  const { formData, updateFormData } = useBasementForm();
+  const { formData, updateFormData, sessionId, isInitialized, trackStepView, completeStep } = useBasementForm();
+  
+  // Refs to prevent double-firing events
+  const hasTrackedViewContent = useRef(false);
+  const hasTrackedStepView = useRef(false);
 
   const options = QUESTION_CONFIG.BASEMENT_CONDITION.options;
+
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(1);
+    }
+  }, [isInitialized, trackStepView]);
+
+  // Track Meta CAPI ViewContent event (fire once per session on funnel start)
+  useEffect(() => {
+    if (isInitialized && sessionId && !hasTrackedViewContent.current) {
+      hasTrackedViewContent.current = true;
+      trackViewContent(sessionId, 'basement', 'RenoAssist - Basement Renovation Inquiry');
+    }
+  }, [isInitialized, sessionId]);
 
   const handleSelect = (value: string) => {
     updateFormData({ basementCondition: value });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (formData.basementCondition) {
+      await completeStep(1);
       navigate('/basement/step-2');
     }
   };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
@@ -7,9 +7,20 @@ import { submitInquiry } from '../../services/xanoService';
 
 export default function Step9Contact() {
   const navigate = useNavigate();
-  const { formData, updateFormData, getXanoAnswers, resetForm } = useBasementForm();
+  const { formData, updateFormData, getXanoAnswers, resetForm, sessionId, isInitialized, trackStepView, completeStep } = useBasementForm();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Ref to prevent double-firing step view
+  const hasTrackedStepView = useRef(false);
+
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(9);
+    }
+  }, [isInitialized, trackStepView]);
 
   const isValidPhone = (phone: string) => {
     // Phone should be 10 digits, no dashes or special characters
@@ -54,9 +65,22 @@ export default function Step9Contact() {
         await updateXanoSyncStatus(inquiryId, true, xanoResult.data);
       }
 
-      // Clear form and navigate to confirmation
+      // Track step completion before navigating
+      await completeStep(9);
+
+      // Capture user data before reset for confirmation page tracking
+      const userData = {
+        email: formData.email,
+        fullName: formData.homeownerName,
+        phone: formData.phone,
+        sessionId: sessionId,
+      };
+
+      // Clear form and navigate to confirmation with user data
       resetForm();
-      navigate('/basement/confirmation');
+      navigate('/basement/confirmation', {
+        state: userData,
+      });
     } catch (err) {
       console.error('Submission error:', err);
       setError(err instanceof Error ? err.message : 'An error occurred. Please try again.');
@@ -87,7 +111,7 @@ export default function Step9Contact() {
             value={formData.homeownerName}
             onChange={(e) => updateFormData({ homeownerName: e.target.value })}
             placeholder="Enter your full name"
-            className="w-full p-4 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none text-slate-700"
+            className="w-full p-4 rounded-xl border-2 border-slate-200 bg-white focus:border-primary focus:outline-none text-slate-700 placeholder:text-slate-400"
           />
         </div>
 
@@ -101,7 +125,7 @@ export default function Step9Contact() {
             value={formData.phone}
             onChange={(e) => updateFormData({ phone: formatPhone(e.target.value) })}
             placeholder="Enter your phone number"
-            className="w-full p-4 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none text-slate-700"
+            className="w-full p-4 rounded-xl border-2 border-slate-200 bg-white focus:border-primary focus:outline-none text-slate-700 placeholder:text-slate-400"
           />
           <p className="text-sm text-accent mt-2">
             (Number Format ex: XXXXXXXXXX, no dash or special characters)

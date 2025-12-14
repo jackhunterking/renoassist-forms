@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StepContainer from '../../components/StepContainer';
 import { useBasementForm } from '../../contexts/BasementFormContext';
@@ -6,14 +6,26 @@ import { URGENCY_OPTIONS } from '../../types/basement';
 
 export default function Step5Urgency() {
   const navigate = useNavigate();
-  const { formData, updateFormData } = useBasementForm();
+  const { formData, updateFormData, isInitialized, trackStepView, completeStep } = useBasementForm();
+  
+  // Ref to prevent double-firing step view
+  const hasTrackedStepView = useRef(false);
+
+  // Track step view on mount
+  useEffect(() => {
+    if (isInitialized && !hasTrackedStepView.current) {
+      hasTrackedStepView.current = true;
+      trackStepView(5);
+    }
+  }, [isInitialized, trackStepView]);
 
   const handleSelect = (value: string) => {
     updateFormData({ urgency: value });
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (formData.urgency) {
+      await completeStep(5);
       navigate('/basement/step-6');
     }
   };
